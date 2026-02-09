@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 import calcTree from 'relatives-tree';
 import Connector from './Connector';
 import { ReactNativeRelativesTreeProps } from './types';
@@ -7,6 +7,10 @@ import { ReactNativeRelativesTreeProps } from './types';
 /**
  * ReactNativeRelativesTree - A React Native component that calculates
  * and renders a family/relatives tree using the `relatives-tree` engine.
+ *
+ * This component is fully compatible with React Native (iOS/Android)
+ * and react-native-web. Position nodes using `left`/`top` for best
+ * cross-platform results, or use transforms if needed.
  *
  * Usage:
  * ```tsx
@@ -21,11 +25,9 @@ import { ReactNativeRelativesTreeProps } from './types';
  *       style={{
  *         width: 100,
  *         height: 120,
- *         transform: [
- *           { translateX: node.left * (100 / 2) },
- *           { translateY: node.top * (120 / 2) },
- *         ],
  *         position: 'absolute',
+ *         left: node.left * (100 / 2),
+ *         top: node.top * (120 / 2),
  *       }}
  *     >
  *       <Text>{node.id}</Text>
@@ -55,7 +57,7 @@ const ReactNativeRelativesTree = memo<ReactNativeRelativesTreeProps>(
     const halfWidth = width / 2;
     const halfHeight = height / 2;
 
-    const containerStyle = useMemo(
+    const containerStyle = useMemo<ViewStyle>(
       () => ({
         width: data.canvas.width * halfWidth,
         height: data.canvas.height * halfHeight,
@@ -85,6 +87,9 @@ const ReactNativeRelativesTree = memo<ReactNativeRelativesTreeProps>(
 
 const styles = StyleSheet.create({
   container: {
+    // Do NOT use overflow: 'visible' — it's broken on Android.
+    // Instead, the container is sized exactly to fit the canvas,
+    // so no overflow should be needed.
     position: 'relative',
   },
 });

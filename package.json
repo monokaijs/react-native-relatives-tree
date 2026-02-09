@@ -8,7 +8,8 @@
   "scripts": {
     "build": "tsc",
     "start": "tsc --watch",
-    "example": "cd example && yarn dev"
+    "example:web": "cd example-web && yarn dev",
+    "example:mobile": "cd example-mobile && yarn start"
   },
   "keywords": [
     "react-native",

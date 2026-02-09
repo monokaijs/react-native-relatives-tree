@@ -7,6 +7,8 @@ A React Native-compatible port of [`react-family-tree`](https://github.com/Sanic
 ## Install
 
 ```bash
+yarn add react-native-relatives-tree
+# or
 npm i react-native-relatives-tree
 ```
 
@@ -31,11 +33,9 @@ const NODE_HEIGHT = 110;
       style={{
         width: NODE_WIDTH,
         height: NODE_HEIGHT,
-        transform: [
-          { translateX: node.left * (NODE_WIDTH / 2) },
-          { translateY: node.top * (NODE_HEIGHT / 2) },
-        ],
         position: 'absolute',
+        left: node.left * (NODE_WIDTH / 2),
+        top: node.top * (NODE_HEIGHT / 2),
       }}
     />
   )}
@@ -73,14 +73,38 @@ interface Relation {
 }
 ```
 
-## Web Example
+## Node Positioning
 
-The `example/` directory contains a web demo using `react-native-web` via Vite:
+Use `left`/`top` for node positioning (recommended for cross-platform compatibility):
+
+```tsx
+style={{
+  position: 'absolute',
+  left: node.left * (NODE_WIDTH / 2),
+  top: node.top * (NODE_HEIGHT / 2),
+}}
+```
+
+## Examples
+
+### Web Example (`example-web/`)
+
+Uses Vite + `react-native-web` to emulate React Native in the browser:
 
 ```bash
-cd example
-npm install
-npm run dev
+cd example-web
+yarn install
+yarn dev
+```
+
+### Mobile Example (`example-mobile/`)
+
+Uses Expo + NativeWind (based on [expo-rapid-boilerplate](https://github.com/monokaijs/expo-rapid-boilerplate)):
+
+```bash
+cd example-mobile
+yarn install
+yarn start
 ```
 
 ## License

@@ -1,10 +1,14 @@
 import React, { memo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { ConnectorProps } from './types';
 
 /**
  * Default connector component that renders a line between
  * family tree nodes using React Native Views.
+ *
+ * Renders horizontal/vertical lines using absolute-positioned Views.
+ * For custom connectors (e.g., SVG curves), use the `renderConnector`
+ * prop on the main tree component.
  */
 const Connector = memo<ConnectorProps>(function Connector({
   connector,
@@ -25,10 +29,8 @@ const Connector = memo<ConnectorProps>(function Connector({
           width: lineWidth,
           height: lineHeight,
           backgroundColor: color,
-          transform: [
-            { translateX: x1 * width },
-            { translateY: y1 * height },
-          ],
+          left: x1 * width,
+          top: y1 * height,
         },
       ]}
       pointerEvents="none"

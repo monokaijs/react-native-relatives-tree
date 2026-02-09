@@ -119,10 +119,8 @@ export default function App() {
                       {
                         width: Math.max(1.5, (x2 - x1) * halfWidth + 1.5),
                         height: Math.max(1.5, (y2 - y1) * halfHeight + 1.5),
-                        transform: [
-                          { translateX: x1 * halfWidth },
-                          { translateY: y1 * halfHeight },
-                        ],
+                        left: x1 * halfWidth,
+                        top: y1 * halfHeight,
                       },
                     ]}
                   />
@@ -141,10 +139,8 @@ export default function App() {
                   style={{
                     width: NODE_WIDTH,
                     height: NODE_HEIGHT,
-                    transform: [
-                      { translateX: node.left * halfWidth },
-                      { translateY: node.top * halfHeight },
-                    ],
+                    left: node.left * halfWidth,
+                    top: node.top * halfHeight,
                   }}
                 />
               ))}

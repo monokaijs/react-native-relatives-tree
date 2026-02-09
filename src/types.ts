@@ -1,4 +1,5 @@
 import { Node, ExtNode, Connector as ConnectorType, RelData, Size } from 'relatives-tree/lib/types';
+import type { ViewStyle } from 'react-native';
 
 /** Gender enum matching relatives-tree */
 export type Gender = 'male' | 'female';
@@ -27,12 +28,29 @@ export interface ReactNativeRelativesTreeProps {
   height: number;
   /** Whether to show placeholder nodes for missing family members */
   placeholders?: boolean;
-  /** Custom render function for each node */
+  /**
+   * Custom render function for each node.
+   *
+   * Position nodes using `left`/`top` for best cross-platform results:
+   * ```tsx
+   * renderNode={(node) => (
+   *   <View key={node.id} style={{
+   *     position: 'absolute',
+   *     width: NODE_WIDTH,
+   *     height: NODE_HEIGHT,
+   *     left: node.left * (NODE_WIDTH / 2),
+   *     top: node.top * (NODE_HEIGHT / 2),
+   *   }}>
+   *     ...
+   *   </View>
+   * )}
+   * ```
+   */
   renderNode: (node: ExtNode) => React.ReactNode;
   /** Custom render function for connectors; if not provided, default lines are rendered */
   renderConnector?: (connector: ConnectorType, index: number) => React.ReactNode;
   /** Style applied to the tree container */
-  style?: any;
+  style?: ViewStyle;
 }
 
 /** Props for the default Connector component */

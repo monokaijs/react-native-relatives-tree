@@ -5,3 +5,6 @@ dist/
 .vite
 *.log
 .DS_Store
+.expo/
+ios/
+android/
