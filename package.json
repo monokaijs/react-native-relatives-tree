@@ -1,0 +1,37 @@
+{
+  "name": "react-native-relatives-tree",
+  "version": "1.0.0",
+  "description": "React Native component for rendering family/relatives trees using the relatives-tree engine",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc --watch",
+    "example": "cd example && yarn dev"
+  },
+  "keywords": [
+    "react-native",
+    "family-tree",
+    "relatives-tree",
+    "genealogy",
+    "tree-view"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "peerDependencies": {
+    "react": ">=16",
+    "react-native": ">=0.60"
+  },
+  "dependencies": {
+    "relatives-tree": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.3.0"
+  }
+}
