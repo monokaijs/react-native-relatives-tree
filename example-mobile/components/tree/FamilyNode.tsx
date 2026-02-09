@@ -12,6 +12,8 @@ interface FamilyNodeProps {
   style?: any;
 }
 
+const AVATAR_SIZE = 48;
+
 const FamilyNode = memo<FamilyNodeProps>(function FamilyNode({
   node,
   isRoot,
@@ -21,10 +23,6 @@ const FamilyNode = memo<FamilyNodeProps>(function FamilyNode({
   style,
 }) {
   const handlePress = useCallback(() => onPress(node.id), [node.id, onPress]);
-  const handleSubPress = useCallback(
-    () => onSubPress(node.id),
-    [node.id, onSubPress],
-  );
 
   const isMale = node.gender === 'male';
   const name = nodeNames[node.id] || node.id;
@@ -35,56 +33,34 @@ const FamilyNode = memo<FamilyNodeProps>(function FamilyNode({
     .toUpperCase();
 
   return (
-    <View style={style} className="absolute p-1">
-      <Pressable
-        onPress={handlePress}
-        className={`flex-1 items-center justify-center rounded-2xl border-[1.5px] overflow-hidden py-2 px-1
-          ${isMale ? 'bg-blue-500/10 border-blue-500/30' : 'bg-pink-500/10 border-pink-500/30'}
-          ${isRoot ? 'border-2 border-primary/60' : ''}
-          ${isSelected ? 'border-2 border-primary/90' : ''}
-        `}>
-        {/* Avatar */}
+    <View style={style} className="absolute">
+      <Pressable onPress={handlePress} className="flex-1 items-center justify-center">
+        {/* Circle Avatar — centered at the cell midpoint */}
         <View
-          className={`w-9 h-9 rounded-full items-center justify-center mb-1
-            ${isMale ? 'bg-blue-500/30' : 'bg-pink-500/30'}
-          `}>
-          <Text className="text-foreground text-[13px] font-bold">
+          className={`items-center justify-center rounded-full
+            ${isMale ? 'bg-[#1a2744]' : 'bg-[#2e1a2a]'}
+            ${isSelected ? 'border-2 border-primary' : 'border-[1.5px] border-neutrals600'}
+            ${isRoot ? 'border-2 border-yellow-400' : ''}
+          `}
+          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE }}>
+          <Text className="text-foreground text-[14px] font-bold">
             {initials}
           </Text>
         </View>
 
-        {/* Name */}
-        <Text
-          className="text-foreground text-[10px] font-semibold text-center"
-          numberOfLines={1}>
-          {name.split(' ')[0]}
-        </Text>
-
-        {/* Gender dot */}
+        {/* Name Badge — absolute, below avatar */}
         <View
-          className={`absolute top-2 right-2 w-[6px] h-[6px] rounded-full
-            ${isMale ? 'bg-blue-500' : 'bg-pink-500'}
+          className={`absolute self-center px-2 py-0.5 rounded-full
+            ${isSelected ? 'bg-primary/20' : 'bg-neutrals800/80'}
           `}
-        />
-
-        {/* Root badge */}
-        {isRoot && (
-          <View className="absolute top-1 left-1.5">
-            <Text className="text-yellow-400 text-[10px]">★</Text>
-          </View>
-        )}
+          style={{ top: '50%', marginTop: AVATAR_SIZE / 2 + 2 }}>
+          <Text
+            className="text-foreground text-[10px] font-semibold text-center"
+            numberOfLines={1}>
+            {name.split(' ')[0]}
+          </Text>
+        </View>
       </Pressable>
-
-      {/* Sub-tree button */}
-      {node.hasSubTree && (
-        <Pressable
-          onPress={handleSubPress}
-          className={`absolute top-0.5 right-2.5 w-5 h-4 rounded-md items-center justify-center border
-            ${isMale ? 'bg-pink-500/30 border-pink-500/40' : 'bg-blue-500/30 border-blue-500/40'}
-          `}>
-          <Text className="text-foreground text-[10px] font-bold">↻</Text>
-        </Pressable>
-      )}
     </View>
   );
 });

@@ -1,13 +1,27 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  GestureDetector,
+  Gesture,
+  GestureHandlerRootView,
+} from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import calcTree from 'relatives-tree';
 import type { ExtNode, Connector as ConnectorType } from 'relatives-tree/lib/types';
 import sampleNodes, { nodeNames } from '@/data/sampleData';
 import FamilyNode from '@/components/tree/FamilyNode';
 
-const NODE_WIDTH = 90;
-const NODE_HEIGHT = 100;
+const NODE_WIDTH = 120;
+const NODE_HEIGHT = 130;
+const MIN_SCALE = 0.3;
+const MAX_SCALE = 2.5;
+
+const springConfig = { damping: 20, stiffness: 200, mass: 0.5 };
 
 export default function HomeScreen() {
   const [rootId, setRootId] = useState('me');
@@ -21,6 +35,14 @@ export default function HomeScreen() {
   const halfWidth = NODE_WIDTH / 2;
   const halfHeight = NODE_HEIGHT / 2;
 
+  // Gesture shared values
+  const scale = useSharedValue(0.85);
+  const savedScale = useSharedValue(0.85);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
+
   const handleNodePress = useCallback((id: string) => {
     setSelectedId(id);
   }, []);
@@ -33,12 +55,54 @@ export default function HomeScreen() {
   const handleReset = useCallback(() => {
     setRootId('me');
     setSelectedId('me');
+    scale.value = withSpring(0.85, springConfig);
+    savedScale.value = 0.85;
+    translateX.value = withSpring(0, springConfig);
+    translateY.value = withSpring(0, springConfig);
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
   }, []);
 
   const selectedNode = useMemo(() => {
     if (!selectedId) return null;
     return sampleNodes.find(n => n.id === selectedId) ?? null;
   }, [selectedId]);
+
+  // Pinch gesture
+  const pinchGesture = Gesture.Pinch()
+    .onStart(() => {
+      savedScale.value = scale.value;
+    })
+    .onUpdate(event => {
+      const newScale = savedScale.value * event.scale;
+      scale.value = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
+    });
+
+  // Pan gesture
+  const panGesture = Gesture.Pan()
+    .minPointers(1)
+    .onStart(() => {
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
+    })
+    .onUpdate(event => {
+      translateX.value = savedTranslateX.value + event.translationX;
+      translateY.value = savedTranslateY.value + event.translationY;
+    });
+
+  // Compose gestures — pinch and pan simultaneously
+  const composedGesture = Gesture.Simultaneous(pinchGesture, panGesture);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { translateY: translateY.value },
+      { scale: scale.value },
+    ],
+  }));
+
+  const treeWidth = data.canvas.width * halfWidth;
+  const treeHeight = data.canvas.height * halfHeight;
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -64,34 +128,26 @@ export default function HomeScreen() {
               Members
             </Text>
           </View>
-          <View className="bg-primary/10 rounded-xl px-3 py-1.5 items-center border border-primary/15">
-            <Text className="text-primary text-base font-extrabold">4</Text>
-            <Text className="text-neutrals400 text-[9px] font-medium uppercase tracking-wider mt-0.5">
-              Generations
-            </Text>
-          </View>
         </View>
       </View>
 
-      {/* Tree View */}
-      <View className="flex-1">
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ flexGrow: 1 }}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              flexGrow: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 20,
-            }}>
+      {/* Tree View with Gestures */}
+      <View className="flex-1 overflow-hidden">
+        <GestureDetector gesture={composedGesture}>
+          <Animated.View
+            style={[
+              {
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+              animatedStyle,
+            ]}>
             <View
               style={{
                 position: 'relative',
-                width: data.canvas.width * halfWidth,
-                height: data.canvas.height * halfHeight,
+                width: treeWidth,
+                height: treeHeight,
               }}>
               {/* Connectors */}
               {data.connectors.map(
@@ -134,17 +190,43 @@ export default function HomeScreen() {
                 />
               ))}
             </View>
-          </ScrollView>
-        </ScrollView>
+          </Animated.View>
+        </GestureDetector>
 
-        {/* Reset button */}
-        {rootId !== 'me' && (
-          <Pressable
-            onPress={handleReset}
-            className="absolute bottom-5 right-5 bg-neutrals800/90 rounded-2xl px-4 py-3 border border-neutrals700">
-            <Text className="text-primary text-sm font-bold">⟲ Reset</Text>
-          </Pressable>
-        )}
+        {/* Reset + Zoom controls */}
+        <View className="absolute bottom-5 right-5 gap-3">
+          <View className="bg-neutrals800/90 rounded-2xl border border-neutrals700 overflow-hidden">
+            <Pressable
+              onPress={() => {
+                scale.value = withSpring(
+                  Math.min(MAX_SCALE, scale.value + 0.2),
+                  springConfig,
+                );
+                savedScale.value = Math.min(MAX_SCALE, savedScale.value + 0.2);
+              }}
+              className="w-11 h-11 items-center justify-center">
+              <Text className="text-foreground text-lg font-semibold">＋</Text>
+            </Pressable>
+            <View className="h-[1px] bg-neutrals700/60" />
+            <Pressable
+              onPress={() => {
+                scale.value = withSpring(
+                  Math.max(MIN_SCALE, scale.value - 0.2),
+                  springConfig,
+                );
+                savedScale.value = Math.max(MIN_SCALE, savedScale.value - 0.2);
+              }}
+              className="w-11 h-11 items-center justify-center">
+              <Text className="text-foreground text-lg font-semibold">－</Text>
+            </Pressable>
+            <View className="h-[1px] bg-neutrals700/60" />
+            <Pressable
+              onPress={handleReset}
+              className="w-11 h-11 items-center justify-center">
+              <Text className="text-primary text-xl font-semibold">⟲</Text>
+            </Pressable>
+          </View>
+        </View>
       </View>
 
       {/* Bottom Detail Panel */}
